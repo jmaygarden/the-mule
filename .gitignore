@@ -1,0 +1,8 @@
+# login credentials
+passwd.json
+
+# SQLite databases
+*.db
+
+# compiled Python files
+*.pyc
