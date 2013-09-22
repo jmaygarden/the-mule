@@ -6,3 +6,7 @@ passwd.json
 
 # compiled Python files
 *.pyc
+
+# vim swap files
+*.swp
+

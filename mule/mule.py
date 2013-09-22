@@ -356,6 +356,24 @@ class World(Object):
     def __init__(self, game, data):
         super(World, self).__init__(game, data)
 
+    @property
+    def spaceForces(self):
+        try:
+            return self._spaceForces
+        except AttributeError:
+            if 'resources' in self.data:
+                self.calcForceComposition()
+            else:
+                self._spaceForces = None
+            if 'nearObjIDs' in self.data:
+                for objID in self.nearObjIDs:
+                    fleet = self.game.fleets[objID]
+                    if self.sovereignID == fleet.sovereignID:
+                        if self._spaceForces is None:
+                            self._spaceForces = 0.0
+                        self._spaceForces += fleet.spaceForces
+            return self._spaceForces
+
 if __name__ == '__main__':
     game = Game(1)
 
