@@ -261,6 +261,18 @@ class Game:
         r = self.post("setIndustryAlloc", data)
         self.update(r.json)
 
+    def renameObject(self, objID, newName):
+        data = {
+                "authToken": self.authToken,
+                "gameID": self.gameID,
+                "sovereignID": self.sovereignID,
+                "objID": objID,
+                "name": newName,
+                "sequence": self.sequence
+                }
+        r = self.post("renameObject", data)
+        self.update(r.json)
+
     def find(self, name):
         for fleet in self.fleets.values():
             if re.search(name, fleet.name, re.IGNORECASE):
@@ -302,6 +314,9 @@ class Object(object):
     @property
     def name(self):
         return self.data['name'].encode('ascii', 'ignore')
+
+    def rename(self, name):
+        self.game.renameObject(self.id, name)
 
     def calcForceComposition(self):
         self._spaceForces, self._groundForces = \

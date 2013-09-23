@@ -5,7 +5,6 @@ from director import Director
 class ArmadaDirector(Director):
     def __init__(self, game):
         super(ArmadaDirector, self).__init__(game)
-        self.capital = game.worlds[game.userInfo['capitalObjID']]
 
     def _command(self):
         self.log.info('Dispatching armadas...')
@@ -16,14 +15,13 @@ class ArmadaDirector(Director):
                 if 'destID' in fleet.data]
         exclusion.extend([fleet.anchorObjID for fleet in fleets \
                 if 'anchorObjID' in fleet.data])
-        worlds = [
+        worlds = self.filterSectorWorlds(
                 self.game.worlds[row[0]] for row
                 in self.game.cursor.execute("SELECT id FROM Worlds").fetchall()
                 if 1 == self.game.worlds[row[0]].sovereignID and \
                         self.game.worlds[row[0]].id not in exclusion and \
-                        Game.SECTOR_RADIUS > self.capital.distanceTo(
-                            self.game.worlds[row[0]])
-                        ]
+                        9 > self.game.worlds[row[0]].techLevel
+                        )
         for fleet in fleets:
             if 'destID' in fleet.data and \
                     1 == self.game.worlds[fleet.destID].sovereignID:
@@ -41,9 +39,8 @@ class ArmadaDirector(Director):
                 targets = sorted(worlds, key=lambda x: fleet.distanceTo(x))
                 def pick_world():
                     for world in targets:
-                        if 9 > world.techLevel:
-                            return world
-                world = pick_world() or self.capital
+                        return world
+                world = pick_world() or min(self.capitals, key=lambda x: fleet.distanceTo(x))
                 if 'anchorObjID' in fleet.data and \
                         world.id == fleet.anchorObjID:
                     self.log.info("\t'%s' achoring at '%s' (%d)",

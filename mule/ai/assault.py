@@ -5,7 +5,6 @@ from director import Director
 class AssaultDirector(Director):
     def __init__(self, game):
         super(AssaultDirector, self).__init__(game)
-        self.capital = game.worlds[game.userInfo['capitalObjID']]
 
     def _command(self):
         self.log.info('Dispatching assault fleets...')
@@ -14,6 +13,7 @@ class AssaultDirector(Director):
                         re.search('Assault', fleet.name, re.IGNORECASE)]
         exclusion = [fleet.destID for fleet in fleets
                 if 'destID' in fleet.data]
+        capital = self.game.worlds[self.game.userInfo['capitalObjID']]
         for fleet in fleets:
             if 'destID' in fleet.data and \
                     1 == self.game.worlds[fleet.destID].sovereignID:
@@ -29,7 +29,7 @@ class AssaultDirector(Director):
                         fleet.name, world.name, world.id)
                 self.game.attack(world.data, 'invasion')
             else:
-                worlds = [
+                worlds = self.filterSectorWorlds([
                         self.game.worlds[row[0]] for row
                         in self.game.cursor.execute("""
                         SELECT id FROM Worlds WHERE timestamp IS NOT NULL
@@ -40,13 +40,12 @@ class AssaultDirector(Director):
                         ).fetchall()
                         if 1 == self.game.worlds[row[0]].sovereignID and \
                                 self.game.worlds[row[0]].id not in exclusion and \
-                                Game.SECTOR_RADIUS > self.capital.distanceTo(self.game.worlds[row[0]])
-                                ]
+                                9 > self.game.worlds[row[0]].techLevel
+                                ])
                 def pick_world():
                     for world in worlds:
-                        if 9 > world.techLevel:
-                            return world
-                world = pick_world() or self.capital
+                        return world
+                world = pick_world() or capital
                 if 'anchorObjID' in fleet.data and \
                         world.id == fleet.anchorObjID:
                     self.log.info("\t'%s' achoring at '%s' (%d)",

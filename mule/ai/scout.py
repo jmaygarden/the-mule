@@ -5,7 +5,6 @@ from director import Director
 class ScoutDirector(Director):
     def __init__(self, game):
         super(ScoutDirector, self).__init__(game)
-        self.capital = game.worlds[game.userInfo['capitalObjID']]
 
     def _observe(self):
         self.log.info('Observing world resources...')
@@ -34,15 +33,14 @@ class ScoutDirector(Director):
 
     def _command(self):
         self.log.info('Dispatching scouts...')
-        worlds = [
-                self.game.worlds[row[0]] for row in self.game.cursor.execute("""
+        worlds = [world for world in self.filterSectorWorlds(
+            self.game.worlds[row[0]] for row in self.game.cursor.execute("""
         SELECT id FROM Worlds
         ORDER BY (CASE WHEN timestamp IS NULL THEN 1 ELSE 0 END) DESC,
         timestamp ASC
         """).fetchall()
-                #if Game.SECTOR_RADIUS > self.capital.distanceTo(
-                    #self.game.worlds[row[0]])
-                ]
+            if 1 == self.game.worlds[row[0]].sovereignID
+            )]
         scouts = [fleet for fleet in self.game.fleets.values()
                 if self.game.sovereignID == fleet.sovereignID and \
                     re.search('Scout', fleet.name, re.IGNORECASE)]
@@ -66,7 +64,8 @@ class ScoutDirector(Director):
                         fleet.name, self.game.worlds[fleet.destID].name,
                         fleet.destID)
             else:
-                world = iterator.next() or self.capital
+                world = iterator.next() or \
+                        min(self.capitals, key=lambda x: fleet.distanceTo(x))
                 self.log.info("\t'%s' to '%s' (%d)" % (
                     fleet.name, world.name, world.id))
                 fleet.setDestination(world)
