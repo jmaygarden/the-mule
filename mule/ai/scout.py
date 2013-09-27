@@ -13,13 +13,14 @@ class ScoutDirector(Director):
             if 'resources' in world.data:
                 self.game.cursor.execute("""
                 INSERT OR REPLACE INTO Worlds
-                (id, timestamp, groundForces, spaceForces)
-                VALUES (?, ?, ?, ?)
+                (id, timestamp, groundForces, spaceForces, fleetForces)
+                VALUES (?, ?, ?, ?, ?)
                 """, (
                     world.id,
                     TIMESTAMP,
                     world.groundForces,
-                    world.spaceForces))
+                    world.spaceForces,
+                    world.fleetForces))
             else:
                 count = self.game.cursor.execute(
                         "SELECT COUNT(*) FROM Worlds WHERE id = ?",

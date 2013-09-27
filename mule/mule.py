@@ -29,7 +29,7 @@ class Game:
             self.cursor.execute("SELECT id, data FROM Types LIMIT 1")
             self.cursor.execute("SELECT id, data FROM Objects LIMIT 1")
             self.cursor.execute("""
-            SELECT id, timestamp, spaceForces, groundForces FROM Worlds LIMIT 1
+            SELECT id, timestamp, spaceForces, groundForces, fleetForces FROM Worlds LIMIT 1
             """)
         except sqlite3.OperationalError:
             self.cursor.execute(
@@ -42,7 +42,8 @@ class Game:
             CREATE TABLE Worlds(id INTEGER PRIMARY KEY,
                                 timestamp TEXT,
                                 spaceForces REAL,
-                                groundForces REAL)
+                                groundForces REAL,
+                                fleetForces REAL)
             """)
             self.connection.commit()
 
@@ -371,23 +372,42 @@ class World(Object):
     def __init__(self, game, data):
         super(World, self).__init__(game, data)
 
+    def __calcForceComposition(self):
+        if 'resources' in self.data and self.resources is not None:
+            self.calcForceComposition()
+        else:
+            self._spaceForces = None
+        if 'nearObjIDs' in self.data and self.nearObjIDs is not None:
+            self._fleetForces = 0.0
+            for objID in self.nearObjIDs:
+                try:
+                    fleet = self.game.fleets[objID]
+                    if self.sovereignID == fleet.sovereignID:
+                        self._fleetForces += fleet.spaceForces
+                except KeyError:
+                    self.game.log.error('Fleet %d does not exist.', objID)
+            if self._spaceForces is None:
+                self._spaceForces = self._fleetForces
+            else:
+                self._spaceForces += self._fleetForces
+        else:
+            self._fleetForces = None
+
     @property
     def spaceForces(self):
         try:
             return self._spaceForces
         except AttributeError:
-            if 'resources' in self.data:
-                self.calcForceComposition()
-            else:
-                self._spaceForces = None
-            if 'nearObjIDs' in self.data:
-                for objID in self.nearObjIDs:
-                    fleet = self.game.fleets[objID]
-                    if self.sovereignID == fleet.sovereignID:
-                        if self._spaceForces is None:
-                            self._spaceForces = 0.0
-                        self._spaceForces += fleet.spaceForces
+            self.__calcForceComposition()
             return self._spaceForces
+
+    @property
+    def fleetForces(self):
+        try:
+            return self._fleetForces
+        except AttributeError:
+            self.__calcForceComposition()
+            return self._fleetForces
 
 if __name__ == '__main__':
     game = Game(1)

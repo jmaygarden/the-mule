@@ -20,7 +20,7 @@ if __name__ == '__main__':
     scout = ScoutDirector(game)
     assault = AssaultDirector(game)
     armada = ArmadaDirector(game)
-    build = WorldDirector(game)
+    governor = WorldDirector(game)
 
     now = datetime.datetime.now()
     minute = -1
@@ -41,11 +41,13 @@ if __name__ == '__main__':
                             '**********       Watch Complete       **********')
                 if hour != now.hour:
                     hour = now.hour
-                    build.update()
+                    governor.update()
+                    governor.gather(capital)
                     _log.info(
                             '**********        Hour Complete       **********')
                 if day != now.day:
                     day = now.day
+                    governor.deploy()
                     _log.info(
                             '**********        Day Complete        **********')
             except requests.exceptions.ConnectionError, e:

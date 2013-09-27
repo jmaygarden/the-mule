@@ -1,7 +1,7 @@
 from armada import ArmadaDirector
 from assault import AssaultDirector
 from scout import ScoutDirector
-from build import WorldDirector
+from governor import WorldDirector
 
 __all__ = [
         'ArmadaDirector',

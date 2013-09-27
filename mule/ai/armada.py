@@ -17,7 +17,9 @@ class ArmadaDirector(Director):
                 if 'anchorObjID' in fleet.data])
         worlds = self.filterSectorWorlds(
                 self.game.worlds[row[0]] for row
-                in self.game.cursor.execute("SELECT id FROM Worlds").fetchall()
+                in self.game.cursor.execute(
+                    "SELECT id FROM Worlds WHERE fleetForces < 500.0"
+                    ).fetchall()
                 if 1 == self.game.worlds[row[0]].sovereignID and \
                         self.game.worlds[row[0]].id not in exclusion and \
                         9 > self.game.worlds[row[0]].techLevel

@@ -75,3 +75,38 @@ class WorldDirector(Director):
             if self.game.sovereignID == world.sovereignID:
                 self._upgrade(world)
 
+    def deploy(self):
+        for world in self.game.worlds.values():
+            if self.game.sovereignID == world.sovereignID:
+                resources = []
+                for i in xrange(0, len(world.resources), 2):
+                    resType = self.game.types[world.resources[i]]
+                    resCount = world.resources[i+1]
+                    if 'maneuveringUnit' == resType['category'] \
+                            and 50.0 <= resType['FTL']:
+                        resources.append(world.resources[i])
+                        resources.append(world.resources[i+1])
+                if 0 < len(resources):
+                    self.log.info("Deploying from '%s'..." % world.name)
+                    for j in xrange(0, len(resources), 2):
+                        resType = self.game.types[resources[j]]
+                        resCount = resources[j+1]
+                        self.log.info('\t%s: %d' %(
+                            resType['nameDesc'].encode('ascii', 'ignore'),
+                            resCount))
+                    world.deployFleet(resources)
+
+    def gather(self, world):
+        for fleet in self.game.find('Fleet'):
+            if isinstance(fleet, Fleet) and \
+                    self.game.sovereignID == fleet.sovereignID:
+                if 'anchorObjID' in fleet.data and \
+                        fleet.anchorObjID == world.id:
+                    self.log.info('\t%s on %s', fleet.name, world.name)
+                    fleet.transferFleet(world)
+                elif 'destID' in fleet.data and fleet.destID == world.id:
+                    self.log.info('\t%s enroute to %s', fleet.name, world.name)
+                else:
+                    self.log.info('\t%s to %s', fleet.name, world.name)
+                    fleet.setDestination(world)
+
