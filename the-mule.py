@@ -13,7 +13,7 @@ if __name__ == '__main__':
     with open('passwd.json') as fin:
         user = json.loads(fin.read())
     game.login(user['username'], user['password'])
-    game.getObjects()
+    game.initObjects()
 
     capital = game.worlds[game.userInfo['capitalObjID']]
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
     minute = -1
     hour = -1
-    day = now.day
+    day = -1
 
     try:
         while (True):
@@ -37,12 +37,12 @@ if __name__ == '__main__':
                     scout.update()
                     armada.update()
                     assault.update()
+                    governor.gather(capital)
                     _log.info(
                             '**********       Watch Complete       **********')
                 if hour != now.hour:
                     hour = now.hour
                     governor.update()
-                    governor.gather(capital)
                     _log.info(
                             '**********        Hour Complete       **********')
                 if day != now.day:

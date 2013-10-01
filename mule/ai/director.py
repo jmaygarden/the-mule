@@ -12,7 +12,7 @@ class Director(object):
     def getCapitals(self):
         for world in self.game.worlds.values():
             if self.game.sovereignID == world.sovereignID \
-                    and any(x == world.designation for x in (27, 147)):
+                    and any(x == world.designation for x in (29, 148)):
                 yield world
 
     def filterSectorWorlds(self, worlds):

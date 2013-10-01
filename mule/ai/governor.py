@@ -53,7 +53,7 @@ class WorldDirector(Director):
                     or [i for i in entry['buildRequirements'] if i in traits]
         def check_upgrade(entry):
             return 'buildUpgrade' not in entry \
-                    or set(entry['buildUpgrade']).issubset(traits)
+                    or [i for i in entry['buildUpgrade'] if i in traits]
         for entry in self.game.types.values():
             if 'category' in entry \
                     and 'improvement' == entry['category'] \
@@ -76,6 +76,7 @@ class WorldDirector(Director):
                 self._upgrade(world)
 
     def deploy(self):
+        self.log.info('Deploying jump fleets...')
         for world in self.game.worlds.values():
             if self.game.sovereignID == world.sovereignID:
                 resources = []
@@ -97,6 +98,7 @@ class WorldDirector(Director):
                     world.deployFleet(resources)
 
     def gather(self, world):
+        self.log.info("Gathering jump fleets at '%s'...", world.name)
         for fleet in self.game.find('Fleet'):
             if isinstance(fleet, Fleet) and \
                     self.game.sovereignID == fleet.sovereignID:
