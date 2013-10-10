@@ -3,7 +3,8 @@ from mule import *
 from director import Director
 
 class WorldDirector(Director):
-    MIN_SPACE_FORCES = 250.0
+    MIN_SPACE_FORCES = 1000.0
+    MAX_SPACE_FORCES = 2000.0
 
     def __init__(self, game):
         super(WorldDirector, self).__init__(game)
@@ -24,11 +25,11 @@ class WorldDirector(Director):
     def _deallocate(self, world, trait):
         if 'isFixed' in trait and trait['isFixed']:
             entry = self.game.types[trait['traitID']]
-            if 0.1 < trait['allocation']:
+            if 2.0 < trait['allocation']:
                 self.log.info("Set '%s' allocation to %f on '%s'." % (
-                        entry['nameDesc'].encode('ascii', 'ignore'), 0.0,
+                        entry['nameDesc'].encode('ascii', 'ignore'), 1.0,
                         world.name))
-                self.game.setIndustryAlloc(world.data, entry['id'], 0.0)
+                self.game.setIndustryAlloc(world.data, entry['id'], 1.0)
 
     def _upgrade(self, world):
         excludes = [11, 23, 126] # exclude defenses with a chromium requirement
@@ -41,9 +42,10 @@ class WorldDirector(Director):
                     exclude_precursor(x)
         for trait in world.traits:
             if type(trait) is dict:
-                if WorldDirector.MIN_SPACE_FORCES > world.spaceForces:
+                if WorldDirector.MIN_SPACE_FORCES > world.spaceForces or \
+                        any(world.id == x.id for x in self.capitals):
                     self._allocate(world, trait)
-                else:
+                elif WorldDirector.MAX_SPACE_FORCES < world.spaceForces:
                     self._deallocate(world, trait)
                 trait = trait['traitID']
             traits.append(trait)

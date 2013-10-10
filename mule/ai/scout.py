@@ -5,6 +5,7 @@ from director import Director
 class ScoutDirector(Director):
     def __init__(self, game):
         super(ScoutDirector, self).__init__(game)
+        self.scoutAllWorlds = False
 
     def _observe(self):
         self.log.info('Observing world resources...')
@@ -31,6 +32,28 @@ class ScoutDirector(Director):
                             "INSERT INTO Worlds (id) VALUES (?)",
                             (world.id,))
         self.game.connection.commit()
+
+    def _getTargets(self):
+        if self.scoutAllWorlds:
+            for row in self.game.cursor.execute(
+"""
+SELECT id FROM Worlds
+ORDER BY (CASE WHEN timestamp IS NULL THEN 1 ELSE 0 END) DESC,
+timestamp ASC
+""").fetchall():
+                world = self.game.worlds[row[0]]
+                if 1 == world.sovereignID:
+                    yield world
+        else:
+            for world in self.filterSectorWorlds(
+                    self.game.worlds[row[0]] for row in self.game.cursor.execute("""
+            SELECT id FROM Worlds
+            ORDER BY (CASE WHEN timestamp IS NULL THEN 1 ELSE 0 END) DESC,
+            timestamp ASC
+            """).fetchall()
+                    if 1 == self.game.worlds[row[0]].sovereignID
+                    ):
+                yield world
 
     def _command(self):
         self.log.info('Dispatching scouts...')

@@ -274,6 +274,21 @@ class Game:
         r = self.post("renameObject", data)
         self.update(r.json)
 
+    def setTradeRoute(self, importer, exporter, resource, allocType, allocValue):
+        data = {
+                "authToken": self.authToken,
+                "gameID": self.gameID,
+                "sovereignID": self.sovereignID,
+                "objID": importer,
+                "sourceObjID": exporter,
+                "resType": resource,
+                "allocType": allocType,
+                "allocValue": allocValue,
+                "sequence": self.sequence
+                }
+        r = self.post("setTradeRoute", data)
+        self.update(r.json)
+
     def find(self, name):
         for fleet in self.fleets.values():
             if re.search(name, fleet.name, re.IGNORECASE):
@@ -382,7 +397,8 @@ class World(Object):
             for objID in self.nearObjIDs:
                 try:
                     fleet = self.game.fleets[objID]
-                    if self.sovereignID == fleet.sovereignID:
+                    if self.sovereignID == fleet.sovereignID \
+                            and fleet.spaceForces is not None:
                         self._fleetForces += fleet.spaceForces
                 except KeyError:
                     self.game.log.error('Fleet %d does not exist.', objID)

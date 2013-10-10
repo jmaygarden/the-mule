@@ -43,7 +43,10 @@ class ArmadaDirector(Director):
                     for world in targets:
                         return world
                 world = pick_world() or min(self.capitals, key=lambda x: fleet.distanceTo(x))
-                if 'anchorObjID' in fleet.data and \
+                if 'destID' in fleet.data and world.id == fleet.destID:
+                    self.log.info("\t'%s' enroute to '%s' (%d)",
+                            fleet.name, world.name, fleet.id)
+                elif 'anchorObjID' in fleet.data and \
                         world.id == fleet.anchorObjID:
                     self.log.info("\t'%s' achoring at '%s' (%d)",
                             fleet.name, world.name, world.id)

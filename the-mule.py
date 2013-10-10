@@ -18,14 +18,15 @@ if __name__ == '__main__':
     capital = game.worlds[game.userInfo['capitalObjID']]
 
     scout = ScoutDirector(game)
+    scout.scoutAllWorlds = True
     assault = AssaultDirector(game)
     armada = ArmadaDirector(game)
     governor = WorldDirector(game)
 
     now = datetime.datetime.now()
-    minute = -1
-    hour = -1
-    day = -1
+    minute = now.minute
+    hour = now.hour
+    day = now.day
 
     try:
         while (True):
